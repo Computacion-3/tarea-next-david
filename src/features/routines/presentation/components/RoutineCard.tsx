@@ -21,6 +21,7 @@ export function RoutineCard({ routine }: RoutineCardProps) {
             {routine.badgeText}
           </span>
         </div>
+      <div className="badge badge-primary badge-outline">{}</div>
 
         <div className="card-actions justify-end mt-2 pt-2 border-t border-base-200 text-xs opacity-50">
           <span>Creado el {routine.formattedDate}</span>

@@ -33,6 +33,11 @@ export default function RoutinesCleanPage() {
                     </ul>
                 </div>
             </header>
+            <ul className="menu menu-horizontal gap-1 px-0">
+                <li><a className="menu-active">Rutinas</a></li>
+                <li><a>Ejercicios</a></li>
+                <li><a>Progreso</a></li>
+            </ul>
             <header className="border-b border-base-200 pb-4">
                 <h1 className="text-3xl font-bold">Gestión de Rutinas</h1>
                 <p className="text-sm opacity-70 mt-1">

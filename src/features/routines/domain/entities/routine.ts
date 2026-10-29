@@ -3,6 +3,7 @@ export interface RoutineProps {
     readonly name: string;
     readonly description?: string;
     readonly createdAt: Date;
+    readonly category: string;
 }
 
 export class Routine {
@@ -10,6 +11,7 @@ export class Routine {
     readonly name: string;
     readonly description?: string;
     readonly createdAt: Date;
+    readonly category: string;
 
     constructor(props: RoutineProps) {
         this.validate(props);
@@ -17,6 +19,7 @@ export class Routine {
         this.name = props.name;
         this.description = props.description;
         this.createdAt = props.createdAt;
+        this.category = props.category;
     }
 
     private validate(props: RoutineProps): void {
