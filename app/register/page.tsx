@@ -1,4 +1,9 @@
+'use-client';
+
+import { useAuth } from "@/src/features/auth/presentation/hooks/use-auth";
+
 export default function Register() {
+    const { register } = useAuth();
   return (
     <section data-screen="register" className="bg-base-200 grid place-items-center px-4 py-10">
       <div className="card bg-base-100 w-full max-w-sm shadow-md">

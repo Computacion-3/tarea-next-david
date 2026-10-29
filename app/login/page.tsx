@@ -1,4 +1,10 @@
+'use-client';
+
+import { useAuth } from "@/src/features/auth/presentation/hooks/use-auth"
+
 export default function Login(){
+
+    const { login } = useAuth();
     return(
         <main className="p-6 max-w-4xl mx-auto space-y-6">
             <div className="card bg-base-100 w-96 shadow-sm">

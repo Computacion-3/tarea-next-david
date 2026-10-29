@@ -3,6 +3,7 @@ export interface RoutineResponseDto {
     name: string;
     description?: string;
     created_at: string; // ISO 8601 string
+    category: string;
 }
 
 

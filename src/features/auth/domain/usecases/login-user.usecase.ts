@@ -1,4 +1,3 @@
-// src/features/auth/domain/usecases/login.usecase.ts
 import { AuthRepository, LoginCredentials } from '../repositories/auth.repository';
 import { User } from '../entities/user';
 

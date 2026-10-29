@@ -9,6 +9,7 @@ export class RoutineMapper {
             name: dto.name,
             description: dto.description ?? undefined,
             createdAt: new Date(dto.created_at),
+            category: dto.category,
         });
     }
 
