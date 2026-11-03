@@ -6,9 +6,9 @@ export interface RoutineResponseDto {
     category: string;
 }
 
-
 export interface CreateRoutineDto {
     name: string;
     description?: string;
+    category: string;
     userId?: number;
 }

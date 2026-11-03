@@ -1,8 +1,10 @@
 import { Routine } from '../entities/routine';
+import { RoutineCategory } from '../entities/routine-category';
 
 export interface CreateRoutineParams {
     name: string;
     description?: string;
+    category: RoutineCategory;
 }
 
 export interface RoutineRepository {

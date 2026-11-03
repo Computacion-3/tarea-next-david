@@ -1,4 +1,6 @@
 import { Routine } from '../../domain/entities/routine';
+import { RoutineCategory } from '../../domain/entities/routine-category';
+import { toCategoryViewModel } from './routine-category.viewmodel';
 
 export interface RoutineItemViewModel {
     readonly id: number;
@@ -7,6 +9,9 @@ export interface RoutineItemViewModel {
     readonly formattedDate: string;
     readonly isRecent: boolean;
     readonly badgeText: string;
+    readonly category: RoutineCategory;
+    readonly categoryLabel: string;
+    readonly categoryBadgeClass: string;
 }
 
 export class RoutineViewModelMapper {
@@ -14,6 +19,7 @@ export class RoutineViewModelMapper {
         // Regla de presentación: una rutina es reciente si tiene menos de 2 días de creada
         const twoDaysInMs = 1000 * 60 * 60 * 24 * 2;
         const isRecent = Date.now() - entity.createdAt.getTime() <= twoDaysInMs;
+        const category = toCategoryViewModel(entity.category);
 
         return {
             id: entity.id,
@@ -28,6 +34,9 @@ export class RoutineViewModelMapper {
             }),
             isRecent,
             badgeText: isRecent ? 'Reciente' : `ID #${entity.id}`,
+            category: entity.category,
+            categoryLabel: category.label,
+            categoryBadgeClass: category.badgeClass,
         };
     }
 }

@@ -10,18 +10,35 @@ export class RoutineMockDatasource implements RoutineDatasource {
             name: 'Torso Fuerza e Hipertrofia',
             description: 'Rutina de tren superior enfocada en empujes y tracciones pesadas.',
             created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // Hace 3 días
+            category: 'fuerza',
         },
         {
             id: 2,
             name: 'Pierna Completa e Isquios',
             description: 'Rutina de tren inferior con énfasis en sentadilla libre y peso muerto.',
             created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // Hace 2 días
+            category: 'hipertrofia',
         },
         {
             id: 3,
             name: 'Full Body Funcional',
             description: 'Circuito metabólico de cuerpo completo para resistencia y quema calórica.',
             created_at: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(), // Hace 12 horas
+            category: 'funcional',
+        },
+        {
+            id: 4,
+            name: 'Intervalos en Bicicleta',
+            description: 'Sesión HIIT de 25 minutos alternando sprints y recuperación activa.',
+            created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), // Hace 5 días
+            category: 'cardio',
+        },
+        {
+            id: 5,
+            name: 'Movilidad de Cadera y Hombro',
+            description: 'Rutina corta de estiramientos dinámicos para antes de entrenar.',
+            created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(), // Hace 7 días
+            category: 'movilidad',
         },
     ];
 
@@ -47,6 +64,7 @@ export class RoutineMockDatasource implements RoutineDatasource {
             name: dto.name,
             description: dto.description,
             created_at: new Date().toISOString(),
+            category: dto.category,
         };
 
         this.routines.push(newRoutine);

@@ -1,49 +1,60 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
 import { fetchRoutines, createRoutineMutation } from '../store/routines.slice';
 import { CreateRoutineParams } from '../../domain/repositories/routine.repository';
+import { ROUTINE_CATEGORIES, RoutineCategory } from '../../domain/entities/routine-category';
 
 /**
  * Hook fachada (Presentation Layer).
- * 
- * Actúa como adaptador entre los componentes de React y el Store de Redux:
- * 1. Oculta los detalles de Redux a los componentes visuales (RoutineForm, RoutineCard).
- * 2. Mantiene exactamente la misma API pública que tenía con useState.
+ *
+ * Actúa como adaptador entre los componentes de React y el Store de Redux.
+ * @param category Si se indica, `routines` solo contiene las rutinas de esa categoría.
  */
-export function useRoutines() {
+export function useRoutines(category: RoutineCategory | null = null) {
     const dispatch = useAppDispatch();
 
-    // 1. Lectura del estado global gestionado por Redux
-    const routines = useAppSelector((state) => state.routines.items);
+    const allRoutines = useAppSelector((state) => state.routines.items);
     const isLoading = useAppSelector((state) => state.routines.isLoading);
     const isMutating = useAppSelector((state) => state.routines.isMutating);
+    const hasLoaded = useAppSelector((state) => state.routines.hasLoaded);
     const errorMessage = useAppSelector((state) => state.routines.errorMessage);
 
-    // 2. Carga inicial: si el store aún no tiene datos y no está cargando, solicitamos las rutinas
+    // Carga inicial: solo una vez (hasLoaded evita un bucle infinito si la lista viene vacía o falla).
     useEffect(() => {
-        if (routines.length === 0 && !isLoading) {
+        if (!hasLoaded && !isLoading) {
             dispatch(fetchRoutines());
         }
-    }, [dispatch, routines.length, isLoading]);
+    }, [dispatch, hasLoaded, isLoading]);
 
-    // 3. Mutación de creación: delega al thunk asíncrono
-    const createRoutine = async (params: CreateRoutineParams): Promise<boolean> => {
+    const routines = useMemo(
+        () => (category ? allRoutines.filter((r) => r.category === category) : allRoutines),
+        [allRoutines, category],
+    );
+
+    /** Cantidad de rutinas por categoría (para los filtros y la página de categorías). */
+    const countsByCategory = useMemo(() => {
+        const counts = Object.fromEntries(ROUTINE_CATEGORIES.map((c) => [c, 0])) as Record<RoutineCategory, number>;
+        for (const r of allRoutines) counts[r.category] += 1;
+        return counts;
+    }, [allRoutines]);
+
+    const createRoutine = useCallback(async (params: CreateRoutineParams): Promise<boolean> => {
         const resultAction = await dispatch(createRoutineMutation(params));
-        // Devuelve true si la acción culminó en fulfilled (éxito), o false si fue rejected (error)
         return createRoutineMutation.fulfilled.match(resultAction);
-    };
+    }, [dispatch]);
 
-    // 4. Recarga manual
     const reload = useCallback(() => {
         dispatch(fetchRoutines());
     }, [dispatch]);
 
     return {
         routines,
-        // La UI considera que está cargando si estamos en consulta inicial o en proceso de guardado
+        totalCount: allRoutines.length,
+        countsByCategory,
         isLoading: isLoading || isMutating,
+        isInitialLoading: !hasLoaded || (isLoading && allRoutines.length === 0),
         errorMessage,
         reload,
         createRoutine,

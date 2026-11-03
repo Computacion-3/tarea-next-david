@@ -7,6 +7,8 @@ interface RoutinesState {
     items: RoutineItemViewModel[];
     isLoading: boolean;
     isMutating: boolean;
+    /** true después del primer fetch (exitoso o no). Evita re-pedir en bucle cuando la lista está vacía. */
+    hasLoaded: boolean;
     errorMessage: string | null;
 }
 
@@ -14,6 +16,7 @@ const initialState: RoutinesState = {
     items: [],
     isLoading: false,
     isMutating: false,
+    hasLoaded: false,
     errorMessage: null,
 };
 
@@ -68,10 +71,12 @@ export const routinesSlice = createSlice({
             })
             .addCase(fetchRoutines.fulfilled, (state, action: PayloadAction<RoutineItemViewModel[]>) => {
                 state.isLoading = false;
+                state.hasLoaded = true;
                 state.items = action.payload;
             })
             .addCase(fetchRoutines.rejected, (state, action) => {
                 state.isLoading = false;
+                state.hasLoaded = true;
                 state.errorMessage = (action.payload as string) ?? 'Error al obtener rutinas';
             });
 
