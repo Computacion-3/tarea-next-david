@@ -1,27 +1,31 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { User } from '../../domain/entities/user';
+import { authContainer } from '../../di/auth.container';
 import { LoginCredentials, RegisterData } from '../../domain/repositories/auth.repository';
-import { loginUseCase, registerUseCase } from '../../di/auth.container';
+import { UserViewModel, UserViewModelMapper } from '../viewmodels/user.viewmodel';
 
 interface AuthState {
-    user: User | null;
-    status: 'idle' | 'loading' | 'succeeded' | 'failed';
-    error: string | null;
+    user: UserViewModel | null;
+    isLoading: boolean;
+    isMutating: boolean;
+    errorMessage: string | null;
 }
 
 const initialState: AuthState = {
     user: null,
-    status: 'idle',
-    error: null,
+    isLoading: false,
+    isMutating: false,
+    errorMessage: null,
 };
 
 export const loginThunk = createAsyncThunk(
     'auth/login',
     async (credentials: LoginCredentials, { rejectWithValue }) => {
         try {
-            return await loginUseCase.execute(credentials);
-        } catch (error: any) {
-            return rejectWithValue(error.message || 'Credenciales inválidas');
+            const userEntity = await authContainer.login.execute(credentials);
+            return UserViewModelMapper.toViewModel(userEntity);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Credenciales inválidas';
+            return rejectWithValue(message);
         }
     }
 );
@@ -30,52 +34,60 @@ export const registerThunk = createAsyncThunk(
     'auth/register',
     async (data: RegisterData, { rejectWithValue }) => {
         try {
-            return await registerUseCase.execute(data);
-        } catch (error: any) {
-            return rejectWithValue(error.message || 'Error al registrar el usuario');
+            const userEntity = await authContainer.register.execute(data);
+            return UserViewModelMapper.toViewModel(userEntity);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Error al registrar el usuario';
+            return rejectWithValue(message);
         }
     }
 );
 
-const authSlice = createSlice({
+export const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        logout(state) {
+        logout: (state) => {
             state.user = null;
-            state.status = 'idle';
+            state.errorMessage = null;
             localStorage.removeItem('token');
+        },
+        clearError: (state) => {
+            state.errorMessage = null;
         },
     },
     extraReducers: (builder) => {
+        // --- Login ---
         builder
             .addCase(loginThunk.pending, (state) => {
-                state.status = 'loading';
-                state.error = null;
+                state.isMutating = true;
+                state.errorMessage = null;
             })
-            .addCase(loginThunk.fulfilled, (state, action: PayloadAction<User>) => {
-                state.status = 'succeeded';
+            .addCase(loginThunk.fulfilled, (state, action: PayloadAction<UserViewModel>) => {
+                state.isMutating = false;
                 state.user = action.payload;
             })
             .addCase(loginThunk.rejected, (state, action) => {
-                state.status = 'failed';
-                state.error = action.payload as string;
-            })
-            // Register
+                state.isMutating = false;
+                state.errorMessage = (action.payload as string) ?? 'Error al iniciar sesión';
+            });
+
+        // --- Register ---
+        builder
             .addCase(registerThunk.pending, (state) => {
-                state.status = 'loading';
-                state.error = null;
+                state.isMutating = true;
+                state.errorMessage = null;
             })
-            .addCase(registerThunk.fulfilled, (state, action: PayloadAction<User>) => {
-                state.status = 'succeeded';
+            .addCase(registerThunk.fulfilled, (state, action: PayloadAction<UserViewModel>) => {
+                state.isMutating = false;
                 state.user = action.payload;
             })
             .addCase(registerThunk.rejected, (state, action) => {
-                state.status = 'failed';
-                state.error = action.payload as string;
+                state.isMutating = false;
+                state.errorMessage = (action.payload as string) ?? 'Error al registrar';
             });
     },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, clearError } = authSlice.actions;
 export const authReducer = authSlice.reducer;

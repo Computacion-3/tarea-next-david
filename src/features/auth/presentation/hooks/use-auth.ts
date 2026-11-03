@@ -1,18 +1,41 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../../../../store/store';
-import { loginThunk, registerThunk, logout } from '../store/auth.slice';
+import { useCallback } from 'react';
+import { useAppDispatch, useAppSelector } from '@/src/store/hooks'; // Ajusta según tu ruta global
+import { loginThunk, registerThunk, logout as logoutAction, clearError } from '../store/auth.slice';
 import { LoginCredentials, RegisterData } from '../../domain/repositories/auth.repository';
 
-export const useAuth = () => {
-    const dispatch = useDispatch<AppDispatch>();
-    const { user, status, error } = useSelector((state: RootState) => state.auth);
+export function useAuth() {
+    const dispatch = useAppDispatch();
+
+    const user = useAppSelector((state) => state.auth.user);
+    const isLoading = useAppSelector((state) => state.auth.isLoading);
+    const isMutating = useAppSelector((state) => state.auth.isMutating);
+    const errorMessage = useAppSelector((state) => state.auth.errorMessage);
+
+    const login = async (credentials: LoginCredentials): Promise<boolean> => {
+        const resultAction = await dispatch(loginThunk(credentials));
+        return loginThunk.fulfilled.match(resultAction);
+    };
+
+    const register = async (data: RegisterData): Promise<boolean> => {
+        const resultAction = await dispatch(registerThunk(data));
+        return registerThunk.fulfilled.match(resultAction);
+    };
+
+    const logout = useCallback(() => {
+        dispatch(logoutAction());
+    }, [dispatch]);
+
+    const resetError = useCallback(() => {
+        dispatch(clearError());
+    }, [dispatch]);
 
     return {
         user,
-        isLoading: status === 'loading',
-        error,
-        login: (credentials: LoginCredentials) => dispatch(loginThunk(credentials)),
-        register: (data: RegisterData) => dispatch(registerThunk(data)),
-        logout: () => dispatch(logout()),
+        isLoading: isLoading || isMutating,
+        errorMessage,
+        login,
+        register,
+        logout,
+        resetError,
     };
-};
+}

@@ -6,5 +6,7 @@ import { RegisterUserUseCase } from '../domain/usecases/register-user.usecase';
 const authDataSource = new AuthMockDataSource();
 const authRepository = new AuthRepositoryImpl(authDataSource);
 
-export const loginUseCase = new LoginUserUseCase(authRepository);
-export const registerUseCase = new RegisterUserUseCase(authRepository);
+export const authContainer = {
+    login: new LoginUserUseCase(authRepository),
+    register: new RegisterUserUseCase(authRepository),
+};
