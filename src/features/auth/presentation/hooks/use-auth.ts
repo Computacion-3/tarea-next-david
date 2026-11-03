@@ -1,29 +1,30 @@
+'use client';
+
 import { useCallback } from 'react';
-import { useAppDispatch, useAppSelector } from '@/src/store/hooks'; // Ajusta según tu ruta global
-import { loginThunk, registerThunk,checkSessionThunk, logout as logoutAction, clearError } from '../store/auth.slice';
+import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
+import { loginThunk, registerThunk, checkSessionThunk, logoutThunk, clearError } from '../store/auth.slice';
 import { LoginCredentials, RegisterData } from '../../domain/repositories/auth.repository';
 
 export function useAuth() {
     const dispatch = useAppDispatch();
 
     const user = useAppSelector((state) => state.auth.user);
-    const isLoading = useAppSelector((state) => state.auth.isLoading);
     const isMutating = useAppSelector((state) => state.auth.isMutating);
     const isCheckingSession = useAppSelector((state) => state.auth.isCheckingSession);
     const errorMessage = useAppSelector((state) => state.auth.errorMessage);
 
-    const login = async (credentials: LoginCredentials): Promise<boolean> => {
+    const login = useCallback(async (credentials: LoginCredentials): Promise<boolean> => {
         const resultAction = await dispatch(loginThunk(credentials));
         return loginThunk.fulfilled.match(resultAction);
-    };
+    }, [dispatch]);
 
-    const register = async (data: RegisterData): Promise<boolean> => {
+    const register = useCallback(async (data: RegisterData): Promise<boolean> => {
         const resultAction = await dispatch(registerThunk(data));
         return registerThunk.fulfilled.match(resultAction);
-    };
+    }, [dispatch]);
 
-    const logout = useCallback(() => {
-        dispatch(logoutAction());
+    const logout = useCallback(async (): Promise<void> => {
+        await dispatch(logoutThunk());
     }, [dispatch]);
 
     const resetError = useCallback(() => {
@@ -36,7 +37,8 @@ export function useAuth() {
 
     return {
         user,
-        isLoading: isLoading || isMutating,
+        isAuthenticated: user !== null,
+        isLoading: isMutating,
         isCheckingSession,
         errorMessage,
         login,

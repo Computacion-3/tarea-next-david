@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useAuth } from '../hooks/use-auth';
+import { FullScreenLoader } from '@/src/shared/components/FullScreenLoader';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { checkSession, isCheckingSession } = useAuth();
@@ -11,11 +12,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [checkSession]);
 
     if (isCheckingSession) {
-        return (
-            <div className="min-h-screen bg-base-200 flex justify-center items-center">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
-            </div>
-        );
+        return <FullScreenLoader label="Verificando sesión..." />;
     }
 
     return <>{children}</>;

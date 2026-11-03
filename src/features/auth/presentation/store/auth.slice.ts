@@ -5,7 +5,6 @@ import { UserViewModel, UserViewModelMapper } from '../viewmodels/user.viewmodel
 
 interface AuthState {
     user: UserViewModel | null;
-    isLoading: boolean;
     isMutating: boolean;
     isCheckingSession: boolean;
     errorMessage: string | null;
@@ -13,7 +12,6 @@ interface AuthState {
 
 const initialState: AuthState = {
     user: null,
-    isLoading: false,
     isMutating: false,
     isCheckingSession: true,
     errorMessage: null,
@@ -21,14 +19,9 @@ const initialState: AuthState = {
 
 export const checkSessionThunk = createAsyncThunk(
     'auth/checkSession',
-    async (_, { rejectWithValue }) => {
-        try {
-            const userEntity = await authContainer.checkSession.execute();
-            if (!userEntity) return null;
-            return UserViewModelMapper.toViewModel(userEntity);
-        } catch (err: unknown) {
-            return rejectWithValue('Sesión expirada');
-        }
+    async () => {
+        const userEntity = await authContainer.checkSession.execute();
+        return userEntity ? UserViewModelMapper.toViewModel(userEntity) : null;
     }
 );
 
@@ -58,15 +51,14 @@ export const registerThunk = createAsyncThunk(
     }
 );
 
+export const logoutThunk = createAsyncThunk('auth/logout', async () => {
+    await authContainer.logout.execute();
+});
+
 export const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        logout: (state) => {
-            state.user = null;
-            state.errorMessage = null;
-            localStorage.removeItem('token');
-        },
         clearError: (state) => {
             state.errorMessage = null;
         },
@@ -101,6 +93,23 @@ export const authSlice = createSlice({
                 state.isMutating = false;
                 state.errorMessage = (action.payload as string) ?? 'Error al registrar';
             });
+
+        // --- Logout ---
+        builder
+            .addCase(logoutThunk.pending, (state) => {
+                state.isMutating = true;
+            })
+            .addCase(logoutThunk.fulfilled, (state) => {
+                state.isMutating = false;
+                state.user = null;
+                state.errorMessage = null;
+            })
+            .addCase(logoutThunk.rejected, (state) => {
+                state.isMutating = false;
+                state.user = null;
+            });
+
+        // --- Verificación de sesión ---
         builder
             .addCase(checkSessionThunk.pending, (state) => {
                 state.isCheckingSession = true;
@@ -116,5 +125,5 @@ export const authSlice = createSlice({
     },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { clearError } = authSlice.actions;
 export const authReducer = authSlice.reducer;

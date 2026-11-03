@@ -3,19 +3,20 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/use-auth';
+import { FullScreenLoader } from '@/src/shared/components/FullScreenLoader';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { user, isCheckingSession } = useAuth();
+    const { isAuthenticated, isCheckingSession } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
-        if (!isCheckingSession && !user) {
+        if (!isCheckingSession && !isAuthenticated) {
             router.replace('/login');
         }
-    }, [user, isCheckingSession, router]);
+    }, [isAuthenticated, isCheckingSession, router]);
 
-    if (isCheckingSession || !user) {
-        return null;
+    if (isCheckingSession || !isAuthenticated) {
+        return <FullScreenLoader label="Redirigiendo..." />;
     }
 
     return <>{children}</>;
