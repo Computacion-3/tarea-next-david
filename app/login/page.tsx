@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/src/features/auth/presentation/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -11,8 +11,16 @@ export default function Login() {
     const [localError, setLocalError] = useState("");
     const [hasEmptyFields, setHasEmptyFields] = useState(false);
 
-    const { login, isLoading, errorMessage, resetError } = useAuth();
+    const { login, isLoading, errorMessage, resetError, user, isCheckingSession } = useAuth();
     const router = useRouter();
+
+    useEffect(() => {
+        if (!isCheckingSession && user) {
+            router.replace('/routines');
+        }
+    }, [user, isCheckingSession, router]);
+
+    if (isCheckingSession || user) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -20,7 +28,6 @@ export default function Login() {
         resetError();
         setHasEmptyFields(false);
 
-        // Validación de campos vacíos
         if (!email.trim() || !password.trim()) {
             setLocalError("Completa el correo y la contraseña.");
             setHasEmptyFields(true);
@@ -46,7 +53,6 @@ export default function Login() {
                         <legend className="fieldset-legend">Correo</legend>
                         <input
                             type="email"
-                            // Validación visual con input-error
                             className={`input w-full ${hasEmptyFields && !email.trim() ? 'input-error' : ''}`}
                             placeholder="tu@correo.com"
                             value={email}
@@ -56,7 +62,6 @@ export default function Login() {
                         <legend className="fieldset-legend mt-2">Contraseña</legend>
                         <input
                             type="password"
-                            // Validación visual con input-error
                             className={`input w-full ${hasEmptyFields && !password.trim() ? 'input-error' : ''}`}
                             placeholder="********"
                             value={password}

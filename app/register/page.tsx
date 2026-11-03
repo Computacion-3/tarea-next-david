@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/src/features/auth/presentation/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -15,8 +15,16 @@ export default function Register() {
     const [passwordMismatch, setPasswordMismatch] = useState(false);
     const [hasEmptyFields, setHasEmptyFields] = useState(false);
 
-    const { register, isLoading, errorMessage, resetError } = useAuth();
+    const { register, isLoading, errorMessage, resetError, user, isCheckingSession } = useAuth();
     const router = useRouter();
+
+    useEffect(() => {
+        if (!isCheckingSession && user) {
+            router.replace('/routines');
+        }
+    }, [user, isCheckingSession, router]);
+
+    if (isCheckingSession || user) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

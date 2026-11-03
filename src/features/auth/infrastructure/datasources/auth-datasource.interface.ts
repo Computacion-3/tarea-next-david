@@ -4,4 +4,5 @@ import { UserResponseDto } from '../dtos/user.dto';
 export interface AuthRemoteDataSource {
     login(credentials: LoginCredentials): Promise<UserResponseDto>;
     register(data: RegisterData): Promise<UserResponseDto>;
+    checkSession(token: string): Promise<UserResponseDto | null>;
 }

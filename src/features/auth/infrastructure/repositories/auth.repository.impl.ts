@@ -27,4 +27,21 @@ export class AuthRepositoryImpl implements AuthRepository {
     async logout(): Promise<void> {
         localStorage.removeItem('token');
     }
+
+    async checkSession(): Promise<User | null> {
+        const token = localStorage.getItem('token');
+        if (!token) return null;
+
+        try {
+            const dto = await this.remoteDataSource.checkSession(token);
+            if (!dto) {
+                localStorage.removeItem('token');
+                return null;
+            }
+            return UserMapper.toDomain(dto);
+        } catch (error) {
+            localStorage.removeItem('token');
+            return null;
+        }
+    }
 }

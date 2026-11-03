@@ -7,6 +7,7 @@ interface AuthState {
     user: UserViewModel | null;
     isLoading: boolean;
     isMutating: boolean;
+    isCheckingSession: boolean;
     errorMessage: string | null;
 }
 
@@ -14,8 +15,22 @@ const initialState: AuthState = {
     user: null,
     isLoading: false,
     isMutating: false,
+    isCheckingSession: true,
     errorMessage: null,
 };
+
+export const checkSessionThunk = createAsyncThunk(
+    'auth/checkSession',
+    async (_, { rejectWithValue }) => {
+        try {
+            const userEntity = await authContainer.checkSession.execute();
+            if (!userEntity) return null;
+            return UserViewModelMapper.toViewModel(userEntity);
+        } catch (err: unknown) {
+            return rejectWithValue('Sesión expirada');
+        }
+    }
+);
 
 export const loginThunk = createAsyncThunk(
     'auth/login',
@@ -85,6 +100,18 @@ export const authSlice = createSlice({
             .addCase(registerThunk.rejected, (state, action) => {
                 state.isMutating = false;
                 state.errorMessage = (action.payload as string) ?? 'Error al registrar';
+            });
+        builder
+            .addCase(checkSessionThunk.pending, (state) => {
+                state.isCheckingSession = true;
+            })
+            .addCase(checkSessionThunk.fulfilled, (state, action: PayloadAction<UserViewModel | null>) => {
+                state.user = action.payload;
+                state.isCheckingSession = false;
+            })
+            .addCase(checkSessionThunk.rejected, (state) => {
+                state.user = null;
+                state.isCheckingSession = false;
             });
     },
 });

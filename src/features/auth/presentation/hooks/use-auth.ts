@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/src/store/hooks'; // Ajusta según tu ruta global
-import { loginThunk, registerThunk, logout as logoutAction, clearError } from '../store/auth.slice';
+import { loginThunk, registerThunk,checkSessionThunk, logout as logoutAction, clearError } from '../store/auth.slice';
 import { LoginCredentials, RegisterData } from '../../domain/repositories/auth.repository';
 
 export function useAuth() {
@@ -9,6 +9,7 @@ export function useAuth() {
     const user = useAppSelector((state) => state.auth.user);
     const isLoading = useAppSelector((state) => state.auth.isLoading);
     const isMutating = useAppSelector((state) => state.auth.isMutating);
+    const isCheckingSession = useAppSelector((state) => state.auth.isCheckingSession);
     const errorMessage = useAppSelector((state) => state.auth.errorMessage);
 
     const login = async (credentials: LoginCredentials): Promise<boolean> => {
@@ -29,13 +30,19 @@ export function useAuth() {
         dispatch(clearError());
     }, [dispatch]);
 
+    const checkSession = useCallback(() => {
+        dispatch(checkSessionThunk());
+    }, [dispatch]);
+
     return {
         user,
         isLoading: isLoading || isMutating,
+        isCheckingSession,
         errorMessage,
         login,
         register,
         logout,
         resetError,
+        checkSession,
     };
 }

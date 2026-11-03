@@ -85,4 +85,24 @@ export class AuthMockDataSource implements AuthRemoteDataSource {
             token: `mock-jwt-token-for-${newUser.id}`,
         };
     }
+
+    async checkSession(token: string): Promise<UserResponseDto | null> {
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        const userId = token.replace('mock-jwt-token-for-', '');
+        const users = this.getUsers();
+        
+        const user = users.find((u) => u.id === userId);
+
+        if (!user) {
+            return null;
+        }
+
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            token: token,
+        };
+    }
 }

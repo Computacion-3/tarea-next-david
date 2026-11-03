@@ -15,4 +15,5 @@ export interface AuthRepository {
     login(credentials: LoginCredentials): Promise<User>;
     register(data: RegisterData): Promise<User>;
     logout(): Promise<void>;
+    checkSession(): Promise<User | null>;
 }
