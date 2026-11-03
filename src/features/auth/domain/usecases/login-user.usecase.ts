@@ -2,9 +2,17 @@ import { AuthRepository, LoginCredentials } from '../repositories/auth.repositor
 import { User } from '../entities/user';
 
 export class LoginUserUseCase {
-    constructor(private authRepository: AuthRepository) {}
+    constructor(private readonly authRepository: AuthRepository) {}
 
     async execute(credentials: LoginCredentials): Promise<User> {
-        return await this.authRepository.login(credentials);
+        const normalized: LoginCredentials = {
+            email: credentials.email.trim().toLowerCase(),
+            password: credentials.password,
+        };
+
+        const error = User.firstError(User.validateLogin(normalized));
+        if (error) throw new Error(error);
+
+        return await this.authRepository.login(normalized);
     }
 }

@@ -35,18 +35,18 @@ export class AuthMockDataSource implements AuthRemoteDataSource {
     async login(credentials: LoginCredentials): Promise<UserResponseDto> {
         await new Promise((resolve) => setTimeout(resolve, 600));
 
+        if (credentials.email === 'error@test.com') {
+            throw new Error('Credenciales incorrectas (Error simulado)');
+        }
+
         const users = this.getUsers();
 
         const user = users.find(
-            (u) => u.email === credentials.email && u.password === credentials.password
+            (u) => u.email.toLowerCase() === credentials.email.toLowerCase() && u.password === credentials.password
         );
 
         if (!user) {
             throw new Error('Correo o contraseña incorrectos.');
-        }
-
-        if (credentials.email === 'error@test.com') {
-            throw new Error('Credenciales incorrectas (Error simulado)');
         }
 
         return {
@@ -62,7 +62,7 @@ export class AuthMockDataSource implements AuthRemoteDataSource {
 
         const users = this.getUsers();
             
-        const exists = users.some((u) => u.email === data.email);
+        const exists = users.some((u) => u.email.toLowerCase() === data.email.toLowerCase());
 
         if (exists) {
             throw new Error('Este correo electrónico ya está registrado.');
